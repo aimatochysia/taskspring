@@ -1,13 +1,13 @@
 const User = require('../models/userModel');
 
-// Helper function to calculate the subscription expiration date
+//calculate expiration date
 const addMonths = (date, months) => {
   const result = new Date(date);
   result.setMonth(result.getMonth() + months);
   return result;
 };
 
-// Upgrade to Premium
+//upgrade user to premium
 exports.upgradeToPremium = async (req, res) => {
   const { plan } = req.body;
   

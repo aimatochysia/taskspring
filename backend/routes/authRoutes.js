@@ -1,10 +1,10 @@
 const express = require('express');
-const { signup, signin, verifyEmail } = require('../controllers/authController');
-const protect = require('../middleware/authMiddleware');
+const { signup, login, verifyEmail } = require('../controllers/authController');
 
 const router = express.Router();
+
 router.post('/signup', signup);
-router.post('/signin', signin);
-router.get('/verify-email/:token', verifyEmail);
+router.post('/login', login);
+router.get('/verify-email', verifyEmail);
 
 module.exports = router;
