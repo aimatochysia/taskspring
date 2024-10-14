@@ -1,0 +1,45 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - production
+# Auto deploy when pushing to production branch
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # FRONTEND Deployment
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm run build
+
+    - name: Deploy Frontend to cPanel
+      env:
+        CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+        CPANEL_USER: ${{ secrets.CPANEL_USER }}
+        CPANEL_PASSWORD: ${{ secrets.CPANEL_PASSWORD }}
+      run: |
+        # Deploying the frontend build to the frontend directory
+        curl --ftp-create-dirs -T "build/*" -u $CPANEL_USER:$CPANEL_PASSWORD ftp://$CPANEL_HOST/home/$CPANEL_USER/nodeapp/
+
+    # BACKEND Deployment
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: |
+        npm install
+
+    - name: Deploy Backend to cPanel
+      env:
+        CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+        CPANEL_USER: ${{ secrets.CPANEL_USER }}
+        CPANEL_PASSWORD: ${{ secrets.CPANEL_PASSWORD }}
+      run: |
+        # Deploy the backend code to the backend directory (api.taskspring.net)
+        curl --ftp-create-dirs -T "*" -u $CPANEL_USER:$CPANEL_PASSWORD ftp://$CPANEL_HOST/home/$CPANEL_USER/api.taskspring.net/
