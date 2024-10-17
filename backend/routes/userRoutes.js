@@ -44,13 +44,13 @@ router.post('/signup', async (req, res) => {
         });
 
         const savedUser = await newUser.save();
-        const verificationToken = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        const verificationLink = `${process.env.BACKEND_URL}/verify?token=${verificationToken}`;
+        const verificationToken = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '30m' });
+        const verificationLink = `${process.env.VERIFY_LINK}/verify?token=${verificationToken}`;
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: savedUser.user_email,
             subject: 'Taskspring - Verify your email',
-            html: `<p>Welcome to Taskspring. Please verify your email by clicking <a href="${verificationLink}">here</a>.</p>`
+            html: `<p>Welcome to Taskspring. Please verify your email in 30 minutes by clicking <a href="${verificationLink}">here</a>.</p>`
         };
 
         await transporter.sendMail(mailOptions);
@@ -60,34 +60,34 @@ router.post('/signup', async (req, res) => {
         res.status(500).json({ message: 'Error registering user', error: error.message });
     }
 });
-
-
 router.get('/verify', async (req, res) => {
     const { token } = req.query;
+    if (!token) {
+        return res.status(400).json({ message: 'No token provided.' });
+    }
 
     try {
-        
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
-
         if (!user) {
-            return res.status(400).json({ message: 'Invalid token.' });
+            return res.status(404).json({ message: 'User not found.' });
         }
-
-        if (user.user_verid_status === 'active') {
-            return res.status(400).json({ message: 'User is already verified.' });
+        if (user.user_verid_status === 'verified') {
+            return res.status(400).json({ message: 'User already verified.' });
         }
-
-        user.user_verid_status = 'active';
+        user.user_verid_status = 'verified';
         user.user_updated_at = new Date();
         await user.save();
-
-        res.status(200).json({ message: 'Email verified successfully. You can now log in.' });
+        return res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
     } catch (error) {
-        res.status(400).json({ message: 'Invalid or expired token.', error: error.message });
+        if (error.name === 'TokenExpiredError') {
+            await User.findByIdAndDelete(decoded.id);
+            return res.status(400).json({ message: 'Token expired. User account deleted.' });
+        }
+
+        return res.status(500).json({ message: 'Error verifying email', error: error.message });
     }
 });
-
 
 router.get('/protected', async (req, res) => {
     const authHeader = req.headers.authorization;
