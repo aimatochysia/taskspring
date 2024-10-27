@@ -78,7 +78,7 @@ router.get('/verify', async (req, res) => {
         user.user_verid_status = 'verified';
         user.user_updated_at = new Date();
         await user.save();
-        return res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
+        return res.redirect(`${process.env.FRONTEND_URL}/dashboard`); //!chnage to sign in first
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
             await User.findByIdAndDelete(decoded.id);
@@ -105,6 +105,28 @@ router.get('/protected', async (req, res) => {
         res.status(200).json({ message: 'Access granted to protected route.' });
     } catch (error) {
         res.status(401).json({ message: 'Invalid or expired token.', error: error.message });
+    }
+});
+
+router.post('/signin', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ user_email: email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const isMatch = await bcrypt.compare(password, user.user_password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials.' });
+        }
+        if (user.user_verid_status !== 'verified') {
+            return res.status(400).json({ message: 'Please verify your email before signing in.' });
+        }
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.status(200).json({ token, message: 'Login successful.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error signing in', error: error.message });
     }
 });
 
