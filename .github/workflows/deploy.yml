@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - production
-# Auto deploy when pushing to production branch
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,33 +12,50 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # FRONTEND Deployment
+    - name: Set up SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+      run: |
+        # Start ssh-agent
+        eval "$(ssh-agent -s)" > /dev/null
+
+        # Create the .ssh directory if it doesn't exist
+        mkdir -p ~/.ssh
+
+        # Create the private key file and set correct permissions
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+        # Add SSH private key to the agent with passphrase
+        echo "$SSH_PASSPHRASE" | ssh-add ~/.ssh/id_rsa
+
+        # Ensure the host is known (you can use a specific known host entry for your server)
+        ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
+
     - name: Install Frontend Dependencies
       working-directory: ./frontend
       run: |
         npm install
         npm run build
 
-    - name: Deploy Frontend to cPanel
+    - name: Deploy Frontend to cPanel via SSH
       env:
         CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
         CPANEL_USER: ${{ secrets.CPANEL_USER }}
-        CPANEL_PASSWORD: ${{ secrets.CPANEL_PASSWORD }}
       run: |
-        # Deploying the frontend build to the frontend directory
-        curl --ftp-create-dirs -T "build/*" -u $CPANEL_USER:$CPANEL_PASSWORD ftp://$CPANEL_HOST/home/$CPANEL_USER/nodeapp/
+        # Deploying the frontend build to the frontend directory on cPanel
+        scp -r ./frontend/build/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/nodeapp/
 
-    # BACKEND Deployment
     - name: Install Backend Dependencies
       working-directory: ./backend
       run: |
         npm install
 
-    - name: Deploy Backend to cPanel
+    - name: Deploy Backend to cPanel via SSH
       env:
         CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
         CPANEL_USER: ${{ secrets.CPANEL_USER }}
-        CPANEL_PASSWORD: ${{ secrets.CPANEL_PASSWORD }}
       run: |
-        # Deploy the backend code to the backend directory (api.taskspring.net)
-        curl --ftp-create-dirs -T "*" -u $CPANEL_USER:$CPANEL_PASSWORD ftp://$CPANEL_HOST/home/$CPANEL_USER/api.taskspring.net/
+        # Deploy the backend code to the backend directory on cPanel
+        scp -r ./backend/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/api.taskspring.net/
