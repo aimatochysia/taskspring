@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - production
-
-      
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,9 +13,17 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+      run: |
+        # Start ssh-agent and set the SSH_AUTH_SOCK environment variable
+        eval "$(ssh-agent -s)" > /dev/null
+        export SSH_AUTH_SOCK
+
+        # Add SSH private key with passphrase
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - <<< "$SSH_PASSPHRASE"
 
     - name: Install Frontend Dependencies
       working-directory: ./frontend
