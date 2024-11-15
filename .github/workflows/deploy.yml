@@ -20,17 +20,17 @@ jobs:
         # Start ssh-agent
         eval "$(ssh-agent -s)" > /dev/null
 
-        # Create the private key file
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+        # Create the .ssh directory if it doesn't exist
+        mkdir -p ~/.ssh
 
-        # Set correct permissions for the private key
+        # Create the private key file and set correct permissions
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
         # Add SSH private key to the agent with passphrase
         echo "$SSH_PASSPHRASE" | ssh-add ~/.ssh/id_rsa
 
         # Ensure the host is known (you can use a specific known host entry for your server)
-        mkdir -p ~/.ssh
         ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
 
     - name: Install Frontend Dependencies
