@@ -14,16 +14,24 @@ jobs:
 
     - name: Set up SSH
       env:
-        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
       run: |
-        # Start ssh-agent and set the SSH_AUTH_SOCK environment variable
+        # Start ssh-agent
         eval "$(ssh-agent -s)" > /dev/null
-        export SSH_AUTH_SOCK
 
-        # Add SSH private key with passphrase
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - <<< "$SSH_PASSPHRASE"
+        # Create the private key file
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+
+        # Set correct permissions for the private key
+        chmod 600 ~/.ssh/id_rsa
+
+        # Add SSH private key to the agent with passphrase
+        echo "$SSH_PASSPHRASE" | ssh-add ~/.ssh/id_rsa
+
+        # Ensure the host is known (you can use a specific known host entry for your server)
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
 
     - name: Install Frontend Dependencies
       working-directory: ./frontend
