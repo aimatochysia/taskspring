@@ -63,20 +63,3 @@ jobs:
       run: |
         # Deploy the backend code to the backend directory on cPanel
         scp -r ./backend/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/api.taskspring.net/
-
-  copy-to-production:
-    runs-on: ubuntu-latest
-    if: github.event.inputs.target_branch == 'main'  # Trigger only if "main" is the input branch
-
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: Fetch all branches
-      run: git fetch --all
-
-    - name: Copy Main to Production
-      run: |
-        git checkout production
-        git merge main
-        git push origin production
