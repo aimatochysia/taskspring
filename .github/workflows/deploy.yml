@@ -1,9 +1,13 @@
 name: Deploy to cPanel
 
 on:
-  push:
-    branches:
-      - production
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch to copy from (use main for production deployment)'
+        required: false
+        default: 'main'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,7 +34,7 @@ jobs:
         # Add SSH private key to the agent with passphrase
         echo "$SSH_PASSPHRASE" | ssh-add ~/.ssh/id_rsa
 
-        # Ensure the host is known (you can use a specific known host entry for your server)
+        # Ensure the host is known
         ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
 
     - name: Install Frontend Dependencies
@@ -59,3 +63,20 @@ jobs:
       run: |
         # Deploy the backend code to the backend directory on cPanel
         scp -r ./backend/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/api.taskspring.net/
+
+  copy-to-production:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.target_branch == 'main'  # Trigger only if "main" is the input branch
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Fetch all branches
+      run: git fetch --all
+
+    - name: Copy Main to Production
+      run: |
+        git checkout production
+        git merge main
+        git push origin production
