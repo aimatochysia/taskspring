@@ -1,65 +1,41 @@
-name: Deploy to cPanel
+name: Publish Website to CPanel
 
 on:
-  workflow_dispatch:
-    inputs:
-      target_branch:
-        description: 'Branch to copy from (use main for production deployment)'
-        required: false
-        default: 'main'
+  push:
+    branches:
+      - main
 
 jobs:
-  deploy:
+  deploy-frontend:
+    name: Deploy Frontend
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
 
-    - name: Set up SSH
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
-      run: |
-        # Start ssh-agent
-        eval "$(ssh-agent -s)" > /dev/null
+      - name: Deploy Frontend to FTP Server
+        uses: SamKirkland/FTP-Deploy-Action@3.1.1
+        with:
+          ftp-server: ${{ secrets.FRONTEND_FTP_SERVER }}
+          ftp-username: ${{ secrets.FRONTEND_FTP_USERNAME }}
+          ftp-password: ${{ secrets.FRONTEND_FTP_PASSWORD }}
+          local-dir: ./frontend
 
-        # Create the .ssh directory if it doesn't exist
-        mkdir -p ~/.ssh
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
 
-        # Create the private key file and set correct permissions
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-
-        # Add SSH private key to the agent with passphrase
-        echo "$SSH_PASSPHRASE" | ssh-add ~/.ssh/id_rsa
-
-        # Ensure the host is known
-        ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
-
-    - name: Install Frontend Dependencies
-      working-directory: ./frontend
-      run: |
-        npm install
-        npm run build
-
-    - name: Deploy Frontend to cPanel via SSH
-      env:
-        CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-        CPANEL_USER: ${{ secrets.CPANEL_USER }}
-      run: |
-        # Deploying the frontend build to the frontend directory on cPanel
-        scp -r ./frontend/build/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/nodeapp/
-
-    - name: Install Backend Dependencies
-      working-directory: ./backend
-      run: |
-        npm install
-
-    - name: Deploy Backend to cPanel via SSH
-      env:
-        CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-        CPANEL_USER: ${{ secrets.CPANEL_USER }}
-      run: |
-        # Deploy the backend code to the backend directory on cPanel
-        scp -r ./backend/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/api.taskspring.net/
+      - name: Deploy Backend to FTP Server
+        uses: SamKirkland/FTP-Deploy-Action@3.1.1
+        with:
+          ftp-server: ${{ secrets.BACKEND_FTP_SERVER }}
+          ftp-username: ${{ secrets.BACKEND_FTP_USERNAME }}
+          ftp-password: ${{ secrets.BACKEND_FTP_PASSWORD }}
+          local-dir: ./backend
