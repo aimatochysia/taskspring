@@ -13,10 +13,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Deploy Frontend to FTP Server
-        uses: lukaszlach/ftp-action@v1.0.0
+        uses: SamKirkland/FTP-Deploy-Action@3.1.1
         with:
           ftp-server: ${{ secrets.FRONTEND_FTP_SERVER }}
           ftp-username: ${{ secrets.FRONTEND_FTP_USERNAME }}
@@ -31,10 +31,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Deploy Backend to FTP Server
-        uses: lukaszlach/ftp-action@v1.0.0
+        uses: SamKirkland/FTP-Deploy-Action@3.1.1
         with:
           ftp-server: ${{ secrets.BACKEND_FTP_SERVER }}
           ftp-username: ${{ secrets.BACKEND_FTP_USERNAME }}
