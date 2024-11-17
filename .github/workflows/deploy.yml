@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 2
 
       - name: Deploy Frontend to FTP Server
-        uses: SamKirkland/FTP-Deploy-Action@3.1.1
+        uses: lukaszlach/ftp-action@v1.0.0
         with:
           ftp-server: ${{ secrets.FRONTEND_FTP_SERVER }}
           ftp-username: ${{ secrets.FRONTEND_FTP_USERNAME }}
@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 2
 
       - name: Deploy Backend to FTP Server
-        uses: SamKirkland/FTP-Deploy-Action@3.1.1
+        uses: lukaszlach/ftp-action@v1.0.0
         with:
           ftp-server: ${{ secrets.BACKEND_FTP_SERVER }}
           ftp-username: ${{ secrets.BACKEND_FTP_USERNAME }}
