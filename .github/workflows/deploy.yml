@@ -14,17 +14,17 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Install sshpass
-      run: sudo apt-get install -y sshpass
+    - name: Install and Verify sshpass
+      run: |
+        sudo apt-get install -y sshpass
+        sshpass -V
 
     - name: Deploy Backend
       run: |
-        # Use sshpass with the password to deploy backend files
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*"
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -r ./backend/* taskspri@sea02.dewaweb.com:/home/taskspri/api.taskspring.net/
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=yes taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*"
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r ./backend/* taskspri@sea02.dewaweb.com:/home/taskspri/api.taskspring.net/
 
     - name: Deploy Frontend
       run: |
-        # Use sshpass with the password to deploy frontend files
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -r ./frontend/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=yes taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r ./frontend/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
