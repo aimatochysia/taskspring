@@ -1,4 +1,4 @@
-name: Publish Website to CPanel
+name: Deploy to cPanel
 
 on:
   push:
@@ -6,38 +6,40 @@ on:
       - main
 
 jobs:
-  deploy-frontend:
-    name: Deploy Frontend
+  deploy:
+    name: Deploy Backend and Frontend
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Deploy Frontend to FTP Server
-        uses: SamKirkland/FTP-Deploy-Action@3.1.1
-        with:
-          ftp-server: ${{ secrets.FRONTEND_FTP_SERVER }}
-          ftp-username: ${{ secrets.FRONTEND_FTP_USERNAME }}
-          ftp-password: ${{ secrets.FRONTEND_FTP_PASSWORD }}
-          local-dir: ./frontend
-          git-ftp-args: --all
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-  deploy-backend:
-    name: Deploy Backend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+    - name: Install sshpass
+      run: sudo apt-get install -y sshpass
 
-      - name: Deploy Backend to FTP Server
-        uses: SamKirkland/FTP-Deploy-Action@3.1.1
-        with:
-          ftp-server: ${{ secrets.BACKEND_FTP_SERVER }}
-          ftp-username: ${{ secrets.BACKEND_FTP_USERNAME }}
-          ftp-password: ${{ secrets.BACKEND_FTP_PASSWORD }}
-          local-dir: ./backend
-          git-ftp-args: --all
+    - name: Deploy Backend
+      run: |
+        # Attempt to deploy using SSH with private key
+        ssh -o BatchMode=yes -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*" || {
+          # If SSH with private key fails, fallback to using password
+          echo "SSH key authentication failed, trying password authentication..."
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*"
+        }
+        # Deploy backend files
+        scp -P 2083 -r ./backend/* taskspri@sea02.dewaweb.com:/home/taskspri/api.taskspring.net/
+
+    - name: Deploy Frontend
+      run: |
+        # Attempt to deploy using SSH with private key
+        ssh -o BatchMode=yes -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*" || {
+          # If SSH with private key fails, fallback to using password
+          echo "SSH key authentication failed, trying password authentication..."
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
+        }
+        # Deploy frontend files
+        scp -P 2083 -r ./frontend/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
