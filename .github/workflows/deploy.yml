@@ -19,16 +19,16 @@ jobs:
         # Create the .ssh directory
         mkdir -p ~/.ssh
         chmod 700 ~/.ssh
-        # Write the private key to a file
+        # Write the unencrypted private key to a file
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        # Start the SSH agent
+        # Start the SSH agent and add the private key
         eval "$(ssh-agent -s)"
-        # Add the passphrase-protected private key to the agent
-        echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
+        ssh-add ~/.ssh/id_rsa
         # Add the host to known_hosts to avoid interactive prompts
         ssh-keyscan -p 2222 sea02.dewaweb.com >> ~/.ssh/known_hosts
-        # Debugging: List the .ssh directory contents and check the known_hosts file
+        # Debugging: Confirm the SSH key is added
+        ssh-add -l
         ls -la ~/.ssh
         cat ~/.ssh/known_hosts
 
@@ -37,28 +37,22 @@ jobs:
 
     - name: Debug SSH Connection
       run: |
-        # Test the SSH connection to the server
+        # Test the SSH connection
         ssh -v -o BatchMode=yes -p 2222 taskspri@sea02.dewaweb.com "echo 'SSH connection successful'"
-      continue-on-error: true  # Allow the job to continue even if this step fails
+      continue-on-error: true  # Let the workflow proceed even if this test fails
 
     - name: Deploy Backend
       run: |
-        # Attempt to deploy using SSH with private key
         ssh -o BatchMode=yes -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*" || {
-          # If SSH with private key fails, fallback to using password
           echo "SSH key authentication failed, trying password authentication..."
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*"
         }
-        # Deploy backend files
         scp -P 2083 -r ./backend/* taskspri@sea02.dewaweb.com:/home/taskspri/api.taskspring.net/
 
     - name: Deploy Frontend
       run: |
-        # Attempt to deploy using SSH with private key
         ssh -o BatchMode=yes -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*" || {
-          # If SSH with private key fails, fallback to using password
           echo "SSH key authentication failed, trying password authentication..."
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p 2222 taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
         }
-        # Deploy frontend files
         scp -P 2083 -r ./frontend/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
