@@ -28,9 +28,18 @@ jobs:
         echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
         # Add the host to known_hosts to avoid interactive prompts
         ssh-keyscan -p 2222 sea02.dewaweb.com >> ~/.ssh/known_hosts
+        # Debugging: List the .ssh directory contents and check the known_hosts file
+        ls -la ~/.ssh
+        cat ~/.ssh/known_hosts
 
     - name: Install sshpass
       run: sudo apt-get install -y sshpass
+
+    - name: Debug SSH Connection
+      run: |
+        # Test the SSH connection to the server
+        ssh -v -o BatchMode=yes -p 2222 taskspri@sea02.dewaweb.com "echo 'SSH connection successful'"
+      continue-on-error: true  # Allow the job to continue even if this step fails
 
     - name: Deploy Backend
       run: |
