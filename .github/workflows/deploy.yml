@@ -28,10 +28,10 @@ jobs:
         ssh -o BatchMode=yes taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*" || {
           # If SSH with private key fails, fallback to using password
           echo "SSH key authentication failed, trying password authentication..."
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*"
+          sshpass "${{ secrets.SSH_PASSWORD }}" ssh taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*"
         }
         # Deploy backend files
-        scp -P 2283 -r ./backend/* taskspri@sea02.dewaweb.com:/home/taskspri/api.taskspring.net/
+        scp -r ./backend/* taskspri@sea02.dewaweb.com:/home/taskspri/api.taskspring.net/
 
     - name: Deploy Frontend
       run: |
@@ -39,7 +39,7 @@ jobs:
         ssh -o BatchMode=yes taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*" || {
           # If SSH with private key fails, fallback to using password
           echo "SSH key authentication failed, trying password authentication..."
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
+          sshpass "${{ secrets.SSH_PASSWORD }}" ssh taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
         }
         # Deploy frontend files
         scp -r ./frontend/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
