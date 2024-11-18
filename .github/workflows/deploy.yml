@@ -27,4 +27,4 @@ jobs:
     - name: Deploy Frontend
       run: |
         sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=yes taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r ./frontend/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r ./frontend/build/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
