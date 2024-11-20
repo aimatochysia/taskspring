@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Task = require('../models/Task');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/auth');
 
 router.post('/create', protect, async (req, res) => {
     const { task_title, task_description, started_at, end_at, repeatable, repeat_options } = req.body;
@@ -11,8 +11,16 @@ router.post('/create', protect, async (req, res) => {
     }
 
     try {
+        const user = req.user;
+        if (user.user_role === 'free') {
+            const taskCount = await Task.countDocuments({ user_email: user.user_email });
+            if (taskCount >= 2) {
+                return res.status(403).json({ message: 'Free users can only create up to 2 tasks.' });
+            }
+        }
+
         const newTask = new Task({
-            user_email: req.user.user_email,
+            user_email: user.user_email,
             task_title,
             task_description,
             started_at,
@@ -27,6 +35,7 @@ router.post('/create', protect, async (req, res) => {
         res.status(500).json({ message: 'Error creating task.', error: error.message });
     }
 });
+
 
 
 
