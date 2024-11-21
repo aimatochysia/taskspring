@@ -1,7 +1,7 @@
 import './App.css';
 import React from 'react';
-import './Components/LoginSignUp/LoginSignUp.css';
-import { LoginSignUp } from './Components/LoginSignUp/LoginSignUp.jsx';
+// import './Components/LoginSignUp/LoginSignUp.css';
+// import { LoginSignUp } from './Components/LoginSignUp/LoginSignUp.jsx';
 // import Homepage from './Components/Homepage.jsx';
 // import ProceduralTree from './ProceduralTree';
 // import Task from './Components/Task.jsx';
@@ -16,7 +16,7 @@ import CityPage from './Components/MyCity/CityPage.jsx';
 function App() {
   return (
     <div>
-      <LoginSignUp />
+      {/* <LoginSignUp /> */}
       {/* <Homepage /> */}
       {/* <Task /> */}
       {/* <Dashboard /> */}
