@@ -2,7 +2,9 @@
 // import Homepage from './Components/Homepage.jsx';
 // import Task from './Components/Task.jsx';
 // import Socials from './Components/Socials.jsx';
-import Dashboard from './Components/Dashboard.jsx';
+// import Dashboard from './Components/Dashboard.jsx';
+import CityPage from './Components/MyCity/CityPage.jsx';
+
 
 function App() {
   return (
@@ -11,7 +13,8 @@ function App() {
       <Homepage />
       <Task />
       <Socials /> */}
-      <Dashboard />
+      {/* <Dashboard /> */}
+      <CityPage />
     </div>
   );
 }
