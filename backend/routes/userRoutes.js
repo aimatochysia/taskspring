@@ -99,10 +99,39 @@ router.get('/protected', async (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
-        if (!user || user.user_verid_status !== 'active') {
-            return res.status(401).json({ message: 'Unauthorized access.' });
+        if (!user) {
+            return res.status(401).json({ message: 'Unauthorized access. User not found.' });
         }
+
+        if (user.user_role !== 'free' && user.user_role !== 'premium') {
+            return res.status(403).json({ message: 'Access denied. Insufficient role.' });
+        }
+
         res.status(200).json({ message: 'Access granted to protected route.' });
+    } catch (error) {
+        res.status(401).json({ message: 'Invalid or expired token.', error: error.message });
+    }
+});
+
+router.get('/premium', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ message: 'Authorization token missing.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return res.status(401).json({ message: 'Unauthorized access. User not found.' });
+        }
+
+        if (user.user_role !== 'premium') {
+            return res.status(403).json({ message: 'Access denied. Premium users only.' });
+        }
+
+        res.status(200).json({ message: 'Access granted to premium route.' });
     } catch (error) {
         res.status(401).json({ message: 'Invalid or expired token.', error: error.message });
     }
@@ -114,11 +143,11 @@ router.post('/signin', async (req, res) => {
     try {
         const user = await User.findOne({ user_email: email });
         if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res.status(404).json({ message: 'Invalid credentials.' });
         }
         const isMatch = await bcrypt.compare(password, user.user_password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials.' });
+            return res.status(404).json({ message: 'Invalid credentials.' });
         }
         if (user.user_verid_status !== 'verified') {
             return res.status(400).json({ message: 'Please verify your email before signing in.' });

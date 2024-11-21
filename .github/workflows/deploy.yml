@@ -3,59 +3,28 @@ name: Deploy to cPanel
 on:
   push:
     branches:
-      - production
+      - main
+
 jobs:
   deploy:
+    name: Deploy Backend and Frontend
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-    - name: Set up SSH
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+    - name: Install and Verify sshpass
       run: |
-        # Start ssh-agent
-        eval "$(ssh-agent -s)" > /dev/null
+        sudo apt-get install -y sshpass
+        sshpass -V
 
-        # Create the .ssh directory if it doesn't exist
-        mkdir -p ~/.ssh
-
-        # Create the private key file and set correct permissions
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-
-        # Add SSH private key to the agent with passphrase
-        echo "$SSH_PASSPHRASE" | ssh-add ~/.ssh/id_rsa
-
-        # Ensure the host is known (you can use a specific known host entry for your server)
-        ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
-
-    - name: Install Frontend Dependencies
-      working-directory: ./frontend
+    - name: Deploy Backend
       run: |
-        npm install
-        npm run build
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=yes taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/api.taskspring.net/*"
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r ./backend/* taskspri@sea02.dewaweb.com:/home/taskspri/api.taskspring.net/
 
-    - name: Deploy Frontend to cPanel via SSH
-      env:
-        CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-        CPANEL_USER: ${{ secrets.CPANEL_USER }}
+    - name: Deploy Frontend
       run: |
-        # Deploying the frontend build to the frontend directory on cPanel
-        scp -r ./frontend/build/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/nodeapp/
-
-    - name: Install Backend Dependencies
-      working-directory: ./backend
-      run: |
-        npm install
-
-    - name: Deploy Backend to cPanel via SSH
-      env:
-        CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-        CPANEL_USER: ${{ secrets.CPANEL_USER }}
-      run: |
-        # Deploy the backend code to the backend directory on cPanel
-        scp -r ./backend/* $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/api.taskspring.net/
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=yes taskspri@sea02.dewaweb.com "rm -rf /home/taskspri/taskspring.net/*"
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r ./frontend/build/* taskspri@sea02.dewaweb.com:/home/taskspri/taskspring.net/
