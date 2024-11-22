@@ -5,13 +5,13 @@ import React from 'react';
 // import Homepage from './Components/Homepage.jsx';
 // import ProceduralTree from './ProceduralTree';
 // import Task from './Components/Task.jsx';
-// import Dashboard from './Components/Dashboard.jsx';
+import Dashboard from './Components/Dashboard.jsx';
 // import Board from './Components/Board.jsx';
 // import City from './Components/City';
 // import SettingsPage from './Components/Settings.jsx';
 // import { LanguageProvider } from './context/LanguageContext.js';
 // import HelpPage from './Components/Help.jsx';
-import CityPage from './Components/MyCity/CityPage.jsx';
+// import CityPage from './Components/MyCity/CityPage.jsx';
 
 function App() {
   return (
@@ -19,14 +19,14 @@ function App() {
       {/* <LoginSignUp /> */}
       {/* <Homepage /> */}
       {/* <Task /> */}
-      {/* <Dashboard /> */}
+      <Dashboard />
       {/* <Board /> */}
       {/* <City /> */}
       {/* <LanguageProvider>
         <SettingsPage />
       </LanguageProvider> */}
       {/* <HelpPage /> */}
-      <CityPage />
+      {/* <CityPage /> */}
     </div>
   );
 }
