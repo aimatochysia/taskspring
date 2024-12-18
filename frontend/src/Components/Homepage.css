@@ -1,9 +1,128 @@
 *{
-    /* border: solid red 1px; */
     box-sizing: border-box;
     color: white;
 }
 
 body{
-    background-color: black;
+    background-color: white;
+    margin: 0;
+    flex-direction: column;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Light Mode */
+.light-mode {
+    background-color: #ffffff;
+    color: #333333;
+}
+
+.light-mode .theme-toggle {
+    background-color: #f0f0f0;
+    color: #333333;
+    border: 1px solid #cccccc;
+}
+
+.light-mode a {
+    color: #0073e6;
+}
+
+.light-mode h1{
+    color: #333;
+}
+
+.light-mode p{
+    color: #333;
+}
+
+.light-mode .bg-blue-400 a {
+    color: #ffffff; 
+    text-decoration: none; 
+}
+
+.light-mode .bg-blue-400 a:hover {
+    text-decoration: underline; 
+}
+
+.light-mode .box {
+    background-color: #f9f9f9;
+    color: #333333;
+}
+
+/* Dark Mode */
+.dark-mode {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.dark-mode .theme-toggle {
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #444444;
+}
+
+.dark-mode a {
+    color: #80bfff;
+}
+
+.dark-mode h1{
+    color: #fff;
+}
+
+.dark-mode p{
+    color: #fff;
+}
+
+.light-mode .bg-blue-400 {
+    background-color: #333333;
+    color: #ffffff; 
+}
+
+.dark-mode .bg-blue-400 {
+    background-color: #005bb5;
+}
+
+.dark-mode .box {
+    background-color: #2a2a2a;
+    color: #ffffff;
+}
+
+.theme-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #cccccc;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.box {
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.bg-blue-400 {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    display: inline-block;
+}
+
+a {
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    text-decoration: underline;
 }
